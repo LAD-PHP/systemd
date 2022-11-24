@@ -121,24 +121,24 @@ noauto,x-systemd.automount,x-systemd.mount-timeout=30,_netdev
 
 Для наглядности посмотрите на пример юнита sshd:
 
-<[Unit]
-Description=OpenSSH server daemon
-Documentation=man:sshd(8) man:sshd_config(5)
-After=network.target sshd-keygen.target
-Wants=sshd-keygen.target
+ [Unit]
+ Description=OpenSSH server daemon
+ Documentation=man:sshd(8) man:sshd_config(5)
+ After=network.target sshd-keygen.target
+ Wants=sshd-keygen.target
  
-[Service]
-Type=notify
-EnvironmentFile=-/etc/crypto-policies/back-ends/opensshserver.config
-EnvironmentFile=-/etc/sysconfig/sshd
-ExecStart=/usr/sbin/sshd -D $OPTIONS $CRYPTO_POLICY
-ExecReload=/bin/kill -HUP $MAINPID
-KillMode=process
-Restart=on-failure
-RestartSec=42s
+ [Service]
+ Type=notify
+ EnvironmentFile=-/etc/crypto-policies/back-ends/opensshserver.config
+ EnvironmentFile=-/etc/sysconfig/sshd
+ ExecStart=/usr/sbin/sshd -D $OPTIONS $CRYPTO_POLICY
+ ExecReload=/bin/kill -HUP $MAINPID
+ KillMode=process
+ Restart=on-failure
+ RestartSec=42s
  
-[Install]
-WantedBy=multi-user.target>
+ [Install]
+ WantedBy=multi-user.target
 
 Давайте разберем все секции.
 
