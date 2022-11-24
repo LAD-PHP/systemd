@@ -115,3 +115,51 @@ noauto,x-systemd.automount,x-systemd.mount-timeout=30,_netdev
 Можно использовать другие статусы:
 
 > active, inactive, running, exited, dead, loaded, not-found, plugged, mounted, waiting, listening.
+
+**Структура юнита systemd**
+Структура может показаться сложной. Но на самом деле она строгая и очень логичная. Каждый юнит представляет собой текстовый файл. Внутри него — обязательные секции и переменные.
+
+Для наглядности посмотрите на пример юнита sshd:
+
+<[Unit]
+Description=OpenSSH server daemon
+Documentation=man:sshd(8) man:sshd_config(5)
+After=network.target sshd-keygen.target
+Wants=sshd-keygen.target
+ 
+[Service]
+Type=notify
+EnvironmentFile=-/etc/crypto-policies/back-ends/opensshserver.config
+EnvironmentFile=-/etc/sysconfig/sshd
+ExecStart=/usr/sbin/sshd -D $OPTIONS $CRYPTO_POLICY
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=42s
+ 
+[Install]
+WantedBy=multi-user.target>
+
+Давайте разберем все секции.
+
+Unit
+
+Первая обязательная секция, в которой описываются метаданные службы и правила взаимодействия с другими службами. В ней доступны следующие переменные:
+
+Description — короткое описание демона.
+Documentation — страница man, на которой расписан порядок взаимодействия со службой.
+After — указание на то, после каких демонов и событий демон запускается. Например, юнит Nginx поднимается после запуска сетевых интерфейсов. Можно указать целую группу других сервисов.
+Requires — какой сервис необходим для запуска юнита.
+Wants — какой сервис желательно запустить перед стартом юнита.
+Если указать сервис в Requires, но не прописать его в After, то он будет запущен параллельно с юнитом, который вы настраиваете.
+
+Пример оформления секции Unit:
+
+[Unit]
+Description=MyUnit
+After=syslog.target
+After=network.target
+After=nginx.service
+After=mysql.service
+Requires=mysql.service
+Wants=redis.service
