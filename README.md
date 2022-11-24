@@ -121,7 +121,7 @@ noauto,x-systemd.automount,x-systemd.mount-timeout=30,_netdev
 
 Для наглядности посмотрите на пример юнита sshd:
 
- [Unit]
+```[Unit]
  Description=OpenSSH server daemon
  Documentation=man:sshd(8) man:sshd_config(5)
  After=network.target sshd-keygen.target
@@ -138,7 +138,7 @@ noauto,x-systemd.automount,x-systemd.mount-timeout=30,_netdev
  RestartSec=42s
  
  [Install]
- WantedBy=multi-user.target
+ WantedBy=multi-user.target```
 
 Давайте разберем все секции.
 
