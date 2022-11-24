@@ -109,5 +109,7 @@ noauto,x-systemd.automount,x-systemd.mount-timeout=30,_netdev
 Поработаем с сервисами *.service
 
 Чтобы отфильтровать их необходимо выполнить команду > systemctl list-units --type=service
-Также можно выбрать только неактивные службы > systemctl list-units --all --state=inactive
-Можно использовать другие статусы: > active, inactive, running, exited, dead, loaded, not-found, plugged, mounted, waiting, listening.
+Также можно выбрать только неактивные службы
+> systemctl list-units --all --state=inactive
+Можно использовать другие статусы:
+> active, inactive, running, exited, dead, loaded, not-found, plugged, mounted, waiting, listening.
