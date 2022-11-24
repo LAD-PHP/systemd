@@ -143,7 +143,7 @@ WantedBy=multi-user.target
 
 Давайте разберем все секции.
 
-Unit
+**Unit**
 
 Первая обязательная секция, в которой описываются метаданные службы и правила взаимодействия с другими службами. В ней доступны следующие переменные:
 
@@ -165,7 +165,78 @@ After=mysql.service
 Requires=mysql.service
 Wants=redis.service
 ```
+**Service**
 
+Вторая обязательная секция для описания конфигурации. Здесь вы указываете, какими командами и под каким пользователем запускать сервис.
+
+* Type — описывает, как запустится демон. Есть несколько вариантов: simple (по умолчанию) — systemd ожидает, что служба запустится незамедлительно. Процесс не должен разветвляться. forking — после запуска демон ответвляется (делает форк), родительский процесс завершается. Такой подход используется для запуска классических демонов. one-shot — одноразовое выполнение. Используется для скриптов, которые запускаются и завершаются после выполнения. notify — аналог simple, но в этом случае сам процесс сообщит systemd о том, что он закончил загрузку и готов к работе.
+* PIDFile — ссылка на основной процесс, который отслеживает systemd.
+* WorkingDirectory — рабочая директория. Становится текущей перед запуском стартап команд.
+* User — пользователь, под которым надо запускать сервис.
+* Group — группа, под которой надо запускать сервис.
+* Environment — переменная окружения.
+* OOMScoreAdjust — запрет на убийство сервиса из-за нехватки памяти или срабатывания механизма OOM (-1000 — полный запрет).
+* ExecStart — команда для старта сервиса.
+* ExecReload — команда для перезапуска сервиса.
+* ExecStop — команда для остановки сервиса.
+* TimeoutSec — время в секундах, которое сервис ожидает отработки старт- или стоп-команд.
+* Restart — настройки перезапуска.
+*Пример оформления секции Service:
+
+```[Service]
+Type=forking
+PIDFile=/work/www/myunit/shared/tmp/pids/service.pid
+WorkingDirectory=/work/www/myunit/current
+User=myunit
+Group=myunit
+Environment=RACK_ENV=production
+OOMScoreAdjust=-1000
+ExecStart=/usr/local/bin/bundle exec service -C /work/www/myunit/shared/config/service.rb --daemon
+ExecStop=/usr/local/bin/bundle exec service -S /work/www/myunit/shared/tmp/pids/service.state stop
+ExecReload=/usr/local/bin/bundle exec service -S /work/www/myunit/shared/tmp/pids/service.state restart
+TimeoutSec=300
+```
+**Install**
+
+Третья обязательная секция. В ней описывается на каком уровне запуска стартует настраиваемый сервис.
+
+Переменная WantedBy сообщает, как устройство включится. Например, multi-user.target означает, что при запуске в директории /etc/systemd/system появится каталог multi-user.target.wants. В нем будет ссылка на службу, которая удалится после остановки службы.
+
+Пример оформления секции Install:
+```
+[Install]
+WantedBy=multi-user.target
+```
+Перечень доступных параметров указан в руководстве. Вызвать его можно командой:
+
+man systemd.unit
+Для определения того, какие сервисы и в каком порядке будут загружены, используется Target. Его основные виды:
+
+* poweroff – отключение системы;
+* rescue – режим восстановления, однопользовательский (init 1);
+* multi-user – сетевой режим без графической оболочки, (init 3);
+* graphical – сетевой режим с графической оболочкой (init 5);
+* reboot – перезагрузка;
+* emergency – аварийная командная строка, минимальный функционал.
+Так же цели можно посмотреть:
+```
+ls -l /usr/lib/systemd/system/runlevel*
+lrwxrwxrwx 1 root root   15 сен  9 21:47 /usr/lib/systemd/system/runlevel0.target -> poweroff.target
+lrwxrwxrwx 1 root root   13 сен  9 21:47 /usr/lib/systemd/system/runlevel1.target -> rescue.target
+lrwxrwxrwx 1 root root   17 сен  9 21:47 /usr/lib/systemd/system/runlevel2.target -> multi-user.target
+lrwxrwxrwx 1 root root   17 сен  9 21:47 /usr/lib/systemd/system/runlevel3.target -> multi-user.target
+lrwxrwxrwx 1 root root   17 сен  9 21:47 /usr/lib/systemd/system/runlevel4.target -> multi-user.target
+lrwxrwxrwx 1 root root   16 сен  9 21:47 /usr/lib/systemd/system/runlevel5.target -> graphical.target
+lrwxrwxrwx 1 root root   13 сен  9 21:47 /usr/lib/systemd/system/runlevel6.target -> reboot.target
+```
+Цели могут наследоваться. Пример взаимодействия с ними:
+
+#список целей
+systemctl list-units --type=target
+#перейти в нужную цель (например – загрузится из сетевого режима в графический)
+systemctl isolate graphical.target
+#выбрать target по умолчанию
+systemctl set-default multi-user.target
 First Header  | Second Header
 ------------- | -------------
 Content Cell  | Content Cell
