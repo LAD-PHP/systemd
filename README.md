@@ -81,7 +81,9 @@ noauto,x-systemd.automount,x-systemd.mount-timeout=30,_netdev
 > SUB — детальная системная информация об юните.
 > DESCRIPTION — краткое описание юнита.
 
-Юниты бывают разных типов. Например, юнит службы имеет тип *.service. Все виды:
+Юниты бывают разных типов. Например, юнит службы имеет тип *.service. 
+
+Все виды:
 > .service	Описывает, как управлять службой или приложением на сервере.
 
 > .socket	Описывает сетевой, IPC-сокет или FIFO-буфер, который используется для активации сокета.
@@ -117,6 +119,7 @@ noauto,x-systemd.automount,x-systemd.mount-timeout=30,_netdev
 > active, inactive, running, exited, dead, loaded, not-found, plugged, mounted, waiting, listening.
 
 **Структура юнита systemd**
+
 Структура может показаться сложной. Но на самом деле она строгая и очень логичная. Каждый юнит представляет собой текстовый файл. Внутри него — обязательные секции и переменные.
 
 Для наглядности посмотрите на пример юнита sshd:
@@ -180,7 +183,8 @@ Wants=redis.service
 * ExecReload — команда для перезапуска сервиса.
 * ExecStop — команда для остановки сервиса.
 * TimeoutSec — время в секундах, которое сервис ожидает отработки старт- или стоп-команд.
-* Restart — настройки перезапуска.
+* Restart — настройки перезапуска.(например настройка перезапуска при непрдевиденном сбое сервиса)
+
 *Пример оформления секции Service:
 
 ```[Service]
@@ -191,6 +195,8 @@ User=myunit
 Group=myunit
 Environment=RACK_ENV=production
 OOMScoreAdjust=-1000
+Restart=on-failure
+RestartSec=5s
 ExecStart=/usr/local/bin/bundle exec service -C /work/www/myunit/shared/config/service.rb --daemon
 ExecStop=/usr/local/bin/bundle exec service -S /work/www/myunit/shared/tmp/pids/service.state stop
 ExecReload=/usr/local/bin/bundle exec service -S /work/www/myunit/shared/tmp/pids/service.state restart
@@ -212,31 +218,99 @@ WantedBy=multi-user.target
 man systemd.unit
 Для определения того, какие сервисы и в каком порядке будут загружены, используется Target. Его основные виды:
 
-* poweroff – отключение системы;
-* rescue – режим восстановления, однопользовательский (init 1);
-* multi-user – сетевой режим без графической оболочки, (init 3);
-* graphical – сетевой режим с графической оболочкой (init 5);
-* reboot – перезагрузка;
-* emergency – аварийная командная строка, минимальный функционал.
+1.  poweroff – отключение системы;
+2.  rescue – режим восстановления, однопользовательский (init 1);
+3.  multi-user – сетевой режим без графической оболочки, (init 3);
+4.  graphical – сетевой режим с графической оболочкой (init 5);
+5.  reboot – перезагрузка;
+6.  emergency – аварийная командная строка, минимальный функционал.
+
 Так же цели можно посмотреть:
 ```
 ls -l /usr/lib/systemd/system/runlevel*
-lrwxrwxrwx 1 root root   15 сен  9 21:47 /usr/lib/systemd/system/runlevel0.target -> poweroff.target
-lrwxrwxrwx 1 root root   13 сен  9 21:47 /usr/lib/systemd/system/runlevel1.target -> rescue.target
-lrwxrwxrwx 1 root root   17 сен  9 21:47 /usr/lib/systemd/system/runlevel2.target -> multi-user.target
-lrwxrwxrwx 1 root root   17 сен  9 21:47 /usr/lib/systemd/system/runlevel3.target -> multi-user.target
-lrwxrwxrwx 1 root root   17 сен  9 21:47 /usr/lib/systemd/system/runlevel4.target -> multi-user.target
-lrwxrwxrwx 1 root root   16 сен  9 21:47 /usr/lib/systemd/system/runlevel5.target -> graphical.target
-lrwxrwxrwx 1 root root   13 сен  9 21:47 /usr/lib/systemd/system/runlevel6.target -> reboot.target
+/usr/lib/systemd/system/runlevel0.target -> poweroff.target
+/usr/lib/systemd/system/runlevel1.target -> rescue.target
+/usr/lib/systemd/system/runlevel2.target -> multi-user.target
+/usr/lib/systemd/system/runlevel3.target -> multi-user.target
+/usr/lib/systemd/system/runlevel4.target -> multi-user.target
+/usr/lib/systemd/system/runlevel5.target -> graphical.target
+/usr/lib/systemd/system/runlevel6.target -> reboot.target
 ```
 Цели могут наследоваться. Пример взаимодействия с ними:
 
-#список целей
-systemctl list-units --type=target
+#Посмотреть список целей
+> systemctl list-units --type=target
+
 #перейти в нужную цель (например – загрузится из сетевого режима в графический)
-systemctl isolate graphical.target
-#выбрать target по умолчанию
-systemctl set-default multi-user.target
+> systemctl isolate graphical.target
+
+#посмотреть target(цель) по умолчанию
+> systemctl get-default
+
+#выбрать target(цель) по умолчанию
+>systemctl set-default multi-user.target
+
+**Редактирование юнитов**
+
+Юниты нельзя редактировать напрямую. Для этого используется команда edit:
+
+>systemctl edit --full nginx.service
+
+Теперь можно добавить в описание юнита несколько переменных. Например, измените секцию Service.
+
+```
+[Service]
+Restart=on-failure 
+RestartSec=60s
+```
+
+Чтобы применить изменения, необходимо перечитать файлы systemd:
+
+> systemctl daemon-reload
+
+При работе с файл-юнитами systemd вы рискуете оказаться перегруженными опциями.
+Каждый файл-юнит может быть настроен с различными параметрами. Чтобы выяснить, какие параметры доступны для конкретного юнита, используйте команду:
+> systemctl show unit_name.service
+
+ Например, команда systemctl show sshd показывает все параметры systemd, которые можно настроить в юните sshd.service, включая их текущие значения по умолчанию.
+```
+Id=sshd.service
+Names=sshd.service
+Requires=basic.target
+Wants=sshd-keygen.service system.slice
+WantedBy=multi-user.target
+ConsistsOf=sshd-keygen.service
+Conflicts=shutdown.target
+ConflictedBy=sshd.socket
+Before=shutdown.target multi-user.target
+After=network.target sshd-keygen.service systemd-journald.socket
+basic.target system.slice
+Description=OpenSSH server daemon
+LoadState=loaded
+ActiveState=active
+SubState=running
+FragmentPath=/usr/lib/systemd/system/sshd.service
+UnitFileState=enabled
+InactiveExitTimestamp=Sat 2015-05-02 11:06:02 EDT
+InactiveExitTimestampMonotonic=2596332166
+ActiveEnterTimestamp=Sat 2015-05-02 11:06:02 EDT
+ActiveEnterTimestampMonotonic=2596332166
+ActiveExitTimestamp=Sat 2015-05-02 11:05:22 EDT
+ActiveExitTimestampMonotonic=2559916100
+InactiveEnterTimestamp=Sat 2015-05-02 11:06:02 EDT
+InactiveEnterTimestampMonotonic=2596331238
+CanStart=yes
+CanStop=yes
+CanReload=yes
+CanIsolate=no
+StopWhenUnneeded=no
+RefuseManualStart=no
+RefuseManualStop=no
+AllowIsolate=no
+DefaultDependencies=yes
+OnFailureIsolate=no
+IgnoreOnIsolate=no 
+```
 First Header  | Second Header
 ------------- | -------------
 Content Cell  | Content Cell
