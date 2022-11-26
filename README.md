@@ -368,7 +368,7 @@ WantedBy=multi-user.target
 * systemctl edit --full name.service - редактирование файл сервиса
 * systemctl show name.service - показывает все параметры systemd, которые можно настроить в юните
 
-## По подробней разберём systemctl *status name.service*
+## По подробней разберём *systemctl status name.service*
 ![systemctl status](/status.jpg)
 1.	Название и описание службы
 2.	Строка **"Loaded** :" в выходных данных покажет "loaded", если устройство было загружено в память. 
