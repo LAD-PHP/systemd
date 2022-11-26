@@ -312,6 +312,35 @@ DefaultDependencies=yes
 OnFailureIsolate=no
 IgnoreOnIsolate=no 
 ```
+
+## Создание юнитов  
+Вы также можете создавать свои юниты. Например, вы написали приложение на Python и хотите добавить его в виде сервиса, которым будете управлять через systemd. В качестве примера создайте юнит item.service:
+
+> vim /etc/systemd/system/test.service  
+
+В описании юнита добавьте обязательные секции:
+```
+[Unit] 
+Description=test service 
+[Service] 
+Type=oneshot ExecStart=/bin/echo "Hello World!" RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target 
+```
+Теперь нужно применить изменения в конфигурации:
+
+> systemctl daemon-reload  
+
+Следующий шаг — запуск юнита:
+
+> systemctl start test.service  
+
+Напоследок проверьте его статус:
+
+> systemctl status test.service  
+
+## КОМАНДЫ systemctl  
+
 First Header  | Second Header
 ------------- | -------------
 Content Cell  | Content Cell
