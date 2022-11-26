@@ -362,24 +362,29 @@ WantedBy=multi-user.target
 
 ## КОМАНДЫ systemctl  
 все команды можно посмотреть в man systemctl
+* systemctl или systemctl list-units - список запущенных юнитов
+* systemctl list-units --type service --all – отображение статуса всех сервисов 
+* systemctl list-unit-files --type service – отображает все сервисы и проверяет, какие из них активированы  
 * systemctl start name.service – запуск сервиса.  
 * systemctl stop name.service — остановка сервиса  
 * systemctl restart name.service — перезапуск сервиса  
 * systemctl try-restart name.service — перезапуск сервиса только, если он запущен  
 * systemctl reload name.service — перезагрузка конфигурации сервиса  
 * systemctl status name.service — проверка, запущен ли сервис с детальным выводом состояния сервиса  
+* systemctl status pid - информация о процессе по его PID
+* systemctl is–enabled name.service – проверяет, активирован ли сервис 
 * systemctl is-active name.service — проверка, запущен ли сервис с простым ответом: active или inactive  
-* systemctl list-units --type service --all – отображение статуса всех сервисов  
 * systemctl enable name.service – активирует сервис (позволяет стартовать во время запуска системы)  
+* systemctl enable --now name.service - включить юнит в автозагрузку и сразу запустить
 * systemctl disable name.service – деактивирует сервис  
 * systemctl reenable name.service – деактивирует сервис и сразу активирует его  
-* systemctl is–enabled name.service – проверяет, активирован ли сервис  
-* systemctl list-unit-files --type service – отображает все сервисы и проверяет, какие из них активированы  
 * systemctl mask name.service – заменяет файл сервиса симлинком на /dev/null, делая юнит недоступным для systemd  
 * systemctl unmask name.service – возвращает файл сервиса, делая юнит доступным для systemd  
 * systemctl cat name.service - отобразить содержимое юнита
 * systemctl edit --full name.service - редактирование файл сервиса
 * systemctl show name.service - показывает все параметры systemd, которые можно настроить в юните
+* systemctl help unit - страница руководства юнита
+* systemctl daemon-reload - Перезагрузить настройки systemd. Сканировать систему на наличие новых или изменённых юнитов
 
 ## По подробней разберём *systemctl status name.service*
 ![systemctl status](/status.jpg)
@@ -402,6 +407,8 @@ WantedBy=multi-user.target
 6.	**Tasks** – количество заданий и их лимит
 7.	**Memory** – информация об используемой памяти(не всегда можно положиться на эту информацию)
 8.	**CGroup** - Контрольная группа (cgroup), к которой принадлежит процесс данного подразделения. Группа - это подмножество процессов, ресурсы которых могут быть ограничены и обрабатываться совместно. В этом случае sshd является единственным процессом в этой группе, но в случае, когда он совместно используется другими процессами, их pid также будут перечислены здесь.
+> Контрольная группа (англ. control group, cgroups[1], cgroup[2]) — группа процессов в Linux, для которой механизмами ядра наложена изоляция и установлены ограничения на некоторые вычислительные ресурсы (процессорные, сетевые, ресурсы памяти, ресурсы ввода-вывода). Механизм позволяет образовывать иерархические группы процессов с заданными ресурсными свойствами и обеспечивает программное управление ими.
+![systemctl status](/cgroups.png)
 
 ## Плавно переходим к journald, который поможет нам в поиске проблем с сервисом.
 **systemd** использует журнал (journal), собственную систему ведения логов, в связи с чем больше не требуется запускать отдельный демон логирования. Для чтения логов используется команда **journalctl**
