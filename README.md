@@ -372,6 +372,7 @@ WantedBy=multi-user.target
 * systemctl reload name.service — перезагрузка конфигурации сервиса  
 * systemctl status name.service — проверка, запущен ли сервис с детальным выводом состояния сервиса  
 * systemctl status pid - информация о процессе по его PID
+> systemctl status 766 - PID процесса
 * systemctl is–enabled name.service – проверяет, активирован ли сервис 
 * systemctl is-active name.service — проверка, запущен ли сервис с простым ответом: active или inactive  
 * systemctl enable name.service – активирует сервис (позволяет стартовать во время запуска системы)  
@@ -379,6 +380,7 @@ WantedBy=multi-user.target
 * systemctl disable name.service – деактивирует сервис  
 * systemctl reenable name.service – деактивирует сервис и сразу активирует его  
 * systemctl mask name.service – заменяет файл сервиса симлинком на /dev/null, делая юнит недоступным для systemd  
+> /dev/null — специальный файл в системах класса UNIX, представляющий собой так называемое «пустое устройство». Запись в него происходит успешно, независимо от объёма «записанной» информации.
 * systemctl unmask name.service – возвращает файл сервиса, делая юнит доступным для systemd  
 * systemctl cat name.service - отобразить содержимое юнита
 * systemctl edit --full name.service - редактирование файл сервиса
