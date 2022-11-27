@@ -433,22 +433,20 @@ WantedBy=multi-user.target
 ## По подробней разберём *systemctl status name.service*
 
 ```
-● nginx.service - A high performance web server and a reverse proxy server
-     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled) 
-     Active: active (running) since Sat 2022-11-26 15:42:17 UTC; 8min ago
-       Docs: man:nginx(8)
-    Process: 667 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
-    Process: 742 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
-   Main PID: 766 (nginx)
-      Tasks: 3 (limit: 2274)
-     Memory: 7.2M
-     CGroup: /system.slice/nginx.service
-             ├─766 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
-             ├─768 nginx: worker process
-             └─769 nginx: worker process
+● ssh.service - OpenBSD Secure Shell server
+     Loaded: loaded (/lib/systemd/system/ssh.service; enabled; vendor preset: enabled)
+     Active: active (running) since Sat 2022-11-26 15:42:17 UTC; 18h ago
+       Docs: man:sshd(8)
+             man:sshd_config(5)
+   Main PID: 735 (sshd)
+      Tasks: 1 (limit: 2274)
+     Memory: 3.0M
+     CGroup: /system.slice/ssh.service
+             └─735 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
 
-Nov 26 15:42:16 os3 systemd[1]: Starting A high performance web server and a reverse proxy server...
-Nov 26 15:42:17 os3 systemd[1]: Started A high performance web server and a reverse proxy server.
+Nov 26 15:42:17 os3 systemd[1]: Starting OpenBSD Secure Shell server...
+Nov 26 15:42:17 os3 sshd[735]: Server listening on 0.0.0.0 port 22.
+Nov 26 15:42:17 os3 sshd[735]: Server listening on :: port 22.
 ```
 
 1.	Название и описание службы
