@@ -17,7 +17,7 @@ ___
  
  > Подсистема оперирует специально оформленными файлами конфигурации — модулями (англ. unit). Каждый модуль отвечает за отдельно взятую службу, точку монтирования, подключаемое устройство, файл подкачки, виртуальную машину и тому подобные ресурсы. Существуют специальные типы модулей, которые не несут функциональной нагрузки, но позволяют задействовать дополнительные возможности systemd, к ним относятся модули типа target, slice, automount и ряд других.
 ___
-**Возможности systemd**
+## **Возможности systemd**
 
 В зависимости от используемых при компиляции параметров systemd включает до 69 файлов. С их помощью выполняются следующие задачи:
 
@@ -431,10 +431,12 @@ WantedBy=multi-user.target
 * systemctl help unit - страница руководства юнита
 * systemctl daemon-reload - Перезагрузить настройки systemd. Сканировать систему на наличие новых или изменённых юнитов
 
-## По подробней разберём *systemctl status ssh.service*
+## Подробнее о systemctl status
 systemctl status довольно часто используемая команда.
 
 ```
+root@os3:~# systemctl status ssh.service
+
 ● ssh.service - OpenBSD Secure Shell server
      Loaded: loaded (/lib/systemd/system/ssh.service; enabled; vendor preset: enabled)
      Active: active (running) since Sat 2022-11-26 15:42:17 UTC; 18h ago
