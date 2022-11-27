@@ -75,10 +75,55 @@ noauto,x-systemd.automount,x-systemd.idle-timeout=1min
 
 
 #### Можно через анализ последовательности загрузки **systemd-analyze** найти службы, запуск которых отнимает больше всего ресурсов или вызывает сбои.  
-> **systemd-analyze** - Для просмотра информации о количестве времени, которое затрачивается при загрузке системы с разбивкой на ядро и пользовательское пространство, необходимо выполнить следующую команду:    
-**systemd-analyze blame** -просмотреть подробную информацию о затраченном времени каждым блоком (процессом) в отдельности:  
+> **systemd-analyze** - Для просмотра информации о количестве времени, которое затрачивается при загрузке системы с разбивкой на ядро и пользовательское пространство.
+```
+root@os3:~# systemd-analyze
+Startup finished in 4.489s (kernel) + 16.468s (userspace) = 20.957s
+graphical.target reached after 14.005s in userspace
+```    
+**systemd-analyze blame** - просмотреть подробную информацию о затраченном времени каждым блоком (процессом) в отдельности:  
+```
+root@os3:~# systemd-analyze blame
+5.403s vboxadd.service
+5.266s man-db.service
+4.438s fwupd-refresh.service
+4.171s snapd.service
+4.171s logrotate.service
+3.700s e2scrub_all.service
+2.152s snap.lxd.activate.service
+1.829s systemd-networkd-wait-online.service
+1.803s cloud-config.service
+1.671s dev-mapper-ubuntu\x2d\x2dvg\x2dubuntu\x2d\x2dlv.device
+1.518s systemd-udev-settle.service
+1.415s cloud-final.service
+1.259s networkd-dispatcher.service
+1.206s cloud-init-local.service
+1.164s udisks2.service
+...
+```
 **systemd-analyze critical-chain** - просмотреть подробную информацию в виде дерева критической по времени цепочки событий:   
+```
+root@os3:~# systemd-analyze critical-chain
+The time when unit became active or started is printed after the "@" character.
+The time the unit took to start is printed after the "+" character.
 
+graphical.target @14.005s
+└─multi-user.target @14.005s
+  └─snapd.seeded.service @12.731s +512ms
+    └─basic.target @7.437s
+      └─sockets.target @7.431s
+        └─snapd.socket @7.366s +36ms
+          └─sysinit.target @7.213s
+            └─cloud-init.service @6.127s +1.059s
+              └─systemd-networkd-wait-online.service @4.291s +1.829s
+                └─systemd-networkd.service @4.178s +109ms
+                  └─network-pre.target @4.174s
+                    └─cloud-init-local.service @2.966s +1.206s
+                      └─systemd-remount-fs.service @715ms +106ms
+                        └─systemd-journald.socket @582ms
+                          └─system.slice @474ms
+                            └─-.slice @474ms
+```
 Эти и другие задачи решаются различными демонами, которые управляют программами и конфигурационными файлами в составе пакета systemd.
 
 ## **Юниты systemd**
