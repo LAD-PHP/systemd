@@ -635,3 +635,145 @@ journalctl --vacuum-time=1years
 * **RuntimeKeepFree=** — объём свободного места, которое должно оставаться в файловой системе /run после сохранения логов;  
 * **RuntimeMaxFileSize=** — объём файла лога, по достижении которого он должен быть удален из файловой системы /run.  
 > **Единицы измерения: K, M, G, T, P, E.**
+
+Для совместимости с существующими системами journald пересылает все сообщения в классический syslogd. Этот поведение можно отключить в конфигурации /etc/systemd/journald.conf установив параметр
+```
+ForwardToSyslog=no
+```
+
+## Просмотр журналов загрузки
+
+Если journald был настроен на постоянное хранение журналов, мы можем просматривать журналы логов по каждой отдельной загрузке, следующая команда выведет список журналов:
+```
+journalctl --list-boots
+root@os3:~# journalctl --list-boots
+-11 477da6c3a3e04f89822df4b2e7e1c7dd Tue 2022-06-07 11:55:04 UTC—Tue 2022-06-07 11:55:35 UTC
+-10 606a147122db4f80aee333632c35810a Thu 2022-10-06 12:00:53 UTC—Thu 2022-10-06 16:22:37 UTC
+ -9 46ad511ac8cb4f0cb652f49d143b7b2e Mon 2022-10-10 06:29:15 UTC—Mon 2022-10-10 15:51:15 UTC
+ -8 34b100e1cbab45c88afa3dd262a1f075 Tue 2022-10-11 05:49:14 UTC—Tue 2022-10-11 06:03:02 UTC
+ -7 7e4bf94c82bf4751b2b67514fdb8dfdf Tue 2022-10-11 06:16:42 UTC—Tue 2022-10-11 06:30:02 UTC
+ -6 a55949b55ba7420f9f68f2716c835b80 Tue 2022-10-11 07:27:44 UTC—Tue 2022-10-11 07:36:13 UTC
+ -5 0de98bb3e3964f01943c6ea30aa21e66 Tue 2022-10-11 07:36:46 UTC—Tue 2022-10-11 09:48:28 UTC
+ -4 a46ff741fa8e4a59bf3a464b4f548002 Tue 2022-10-11 11:44:09 UTC—Tue 2022-10-11 12:09:35 UTC
+ -3 8064fb13a8c04a66a6db7245a53a3a11 Tue 2022-10-11 12:19:00 UTC—Tue 2022-10-11 12:26:19 UTC
+ -2 d836151f2ff948129a550e44da6e3b90 Mon 2022-10-17 06:36:22 UTC—Mon 2022-10-17 08:32:15 UTC
+ -1 7f5139b8b895491495875e67652558e7 Tue 2022-10-18 08:49:43 UTC—Tue 2022-10-18 08:52:57 UTC
+  0 64b7ca6b7e1349a69138c02483e928a0 Sat 2022-11-26 15:42:10 UTC—Sun 2022-11-27 10:07:22 UTC
+
+```
+
+
+Первый номер показывает номер журнала, который можно использовать для просмотра журнала определенной сессии. Второй номер boot ID так же можно использовать для просмотра отдельного журнала.
+
+Следующие две даты, промежуток времени в течении которого в него записывались логи, это удобно если вы хотите найти логи за определенный период.
+
+Например, чтобы просмотреть журнал начиная с текущего старта системы, можно использовать команду:
+```
+journalctl -b 0
+```
+А для того, чтобы просмотреть журнал предыдущей загрузки:
+```
+journalctl -b -1
+```
+
+## Просмотр журнала за определенный период времени
+
+Journalctl позволяет использовать такие служебные слова как “yesterday” (вчера), “today” (сегодня), “tomorrow” (завтра), или “now” (сейчас).
+
+Поэтому мы можем использовать опцию "--since" (с начала какого периода выводить журнал).
+
+С определенной даты и времени:
+```
+journalctl --since "2020-12-18 06:00:00"
+```
+С определенной даты и по определенное дату и время:
+```
+journalctl --since "2020-12-17" --until "2020-12-18 10:00:00
+```
+Со вчерашнего дня:
+```
+journalctl --since yesterday
+```
+С 9 утра и до момента, час назад:
+```
+journalctl --since 09:00 --until "1 hour ago"
+```
+
+## Просмотр сообщений ядра
+
+Чтобы просмотреть сообщения от ядра Linux за текущую загрузку, используйте команду с ключом -k:
+```
+journalctl -k
+root@os3:~# journalctl -k
+-- Logs begin at Tue 2022-06-07 11:55:04 UTC, end at Sun 2022-11-27 10:11:02 UTC. --
+Nov 26 15:42:10 os3 kernel: Linux version 5.4.0-110-generic (buildd@ubuntu) (gcc version 9.4.0 (Ubuntu 9.4.0-1ubuntu1~20.04.1)) #124-Ubuntu SMP Thu Apr 14 19:46:19 UTC 2022 (Ubuntu 5.4.0-110.124-generic 5.4.181)
+Nov 26 15:42:10 os3 kernel: Command line: BOOT_IMAGE=/vmlinuz-5.4.0-110-generic root=/dev/mapper/ubuntu--vg-ubuntu--lv ro net.ifnames=0 biosdevname=0
+Nov 26 15:42:10 os3 kernel: KERNEL supported cpus:
+Nov 26 15:42:10 os3 kernel:   Intel GenuineIntel
+Nov 26 15:42:10 os3 kernel:   AMD AuthenticAMD
+Nov 26 15:42:10 os3 kernel:   Hygon HygonGenuine
+Nov 26 15:42:10 os3 kernel:   Centaur CentaurHauls
+Nov 26 15:42:10 os3 kernel:   zhaoxin   Shanghai
+Nov 26 15:42:10 os3 kernel: x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'
+Nov 26 15:42:10 os3 kernel: x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'
+Nov 26 15:42:10 os3 kernel: x86/fpu: Supporting XSAVE feature 0x004: 'AVX registers'
+Nov 26 15:42:10 os3 kernel: x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
+Nov 26 15:42:10 os3 kernel: x86/fpu: Enabled xstate features 0x7, context size is 832 bytes, using 'standard' format.
+Nov 26 15:42:10 os3 kernel: BIOS-provided physical RAM map:
+Nov 26 15:42:10 os3 kernel: BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+Nov 26 15:42:10 os3 kernel: BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+Nov 26 15:42:10 os3 kernel: BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+Nov 26 15:42:10 os3 kernel: BIOS-e820: [mem 0x0000000000100000-0x000000007ffeffff] usable
+Nov 26 15:42:10 os3 kernel: BIOS-e820: [mem 0x000000007fff0000-0x000000007fffffff] ACPI data
+Nov 26 15:42:10 os3 kernel: BIOS-e820: [mem 0x00000000fec00000-0x00000000fec00fff] reserved
+Nov 26 15:42:10 os3 kernel: BIOS-e820: [mem 0x00000000fee00000-0x00000000fee00fff] reserved
+Nov 26 15:42:10 os3 kernel: BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+Nov 26 15:42:10 os3 kernel: NX (Execute Disable) protection: active
+Nov 26 15:42:10 os3 kernel: SMBIOS 2.5 present.
+Nov 26 15:42:10 os3 kernel: DMI: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+Nov 26 15:42:10 os3 kernel: Hypervisor detected: KVM
+Nov 26 15:42:10 os3 kernel: kvm-clock: Using msrs 4b564d01 and 4b564d00
+Nov 26 15:42:10 os3 kernel: kvm-clock: cpu 0, msr 23601001, primary cpu clock
+Nov 26 15:42:10 os3 kernel: kvm-clock: using sched offset of 6568915503 cycles
+....
+```
+
+## Просмотр журнала логов для определенного сервиса systemd или приложения
+
+Вы можете отфильтровать логи по определенному сервису systemd. Например, что бы просмотреть логи от NetworkManager, можно использовать следующую команду:
+```
+journalctl -u NetworkManager.service
+```
+Если нужно найти название сервиса, используйте команду:
+```
+systemctl list-units --type=service
+```
+Так же можно просмотреть лог приложения, указав его исполняемый файл, например чтобы просмотреть все сообщения от nginx за сегодня, мы можем использовать команду:
+```
+journalctl /usr/sbin/nginx --since today
+```
+Или указав конкретный PID:
+```
+journalctl _PID=1
+```
+
+## Дополнительные опции просмотра
+
+Следить за появлением новых сообщений (аналог tail -f):
+```
+journalctl -f
+```
+Открыть журнал «перемотав» его к последней записи:
+```
+journalctl -e
+```
+Если в каталоге с журналами очень много данных, то фильтрация вывода journalctl может занять некоторое время, процесс можно значительно ускорить с помощью опции --file, указав journalctl только нужный нам журнал, за которым мы хотим следить:
+```
+journalctl --file /var/log/journal/e02689e50bc240f0bb545dd5940ac213/system.journal -f
+```
+По умолчанию journalctl отсекает части строк, которые не вписываются в экран по ширине, хотя иногда перенос строк может оказаться более предпочтительным. Управление этой возможностью производится посредством переменной окружения SYSTEMD_LESS, в которой содержатся опции, передаваемые в less (программу постраничного просмотра, используемую по умолчанию). По умолчанию переменная имеет значение FRSXMK, если убрать опцию S, строки не будут обрезаться.
+
+Например:
+```
+SYSTEMD_LESS=FRXMK journalctl
+```
