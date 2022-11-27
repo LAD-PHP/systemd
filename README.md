@@ -578,7 +578,7 @@ Journald Configuration File
 Для постоянного хранения логов необходимо раскоментировать занчение Storage= и установить для него значение persistent (постоянный)
 ```
 [Journal]
-#Storage=persistent
+Storage=persistent
 ```
 
 Это создаст каталог /var/log/journal, и все файлы журнала будут сохранены в эту директорию.
